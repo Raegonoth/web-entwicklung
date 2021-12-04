@@ -3,25 +3,25 @@
   "scripts": {
     "clean": "npm run clean:build && rm -rf node_modules",
     "clean:build": "rm -rf build",
-    "lint": "semistandard src/js/**/*.js",
-    "start": "node src/js/server.js",
+    "lint": "semistandard Client/src/js/**/*.js && semistandard Server/src/js/**/*.js",
+    "start": "node Server/src/js/server.js",
     "debug": "npm run lint && npm run clean:build && mkdir build && npm run static && npm run css && npm run js",
     "build": "npm run lint && npm run clean:build && mkdir build && npm run static:min && npm run css:min && npm run js:min",
-    "static": "cp src/index.html build/index.html",
+    "static": "cp Client/src/index.html build/index.html",
     "static:min": "npm run static && place build/index.html style.css style.min.css && place build/index.html main.js main.min.js",
-    "css": "lessc src/styles/style.less build/style.css",
-    "css:min": "lessc --clean-css src/styles/style.less build/style.min.css",
-    "js": "browserify src/js/main.js -o build/main.js",
+    "css": "lessc Client/src/styles/style.less build/style.css",
+    "css:min": "lessc --clean-css Client/src/styles/style.less build/style.min.css",
+    "js": "browserify Client/src/js/main.js -o build/main.js",
     "js:min": "npm run js && terser build/main.js --compress --mangle --comments=false -o build/main.min.js"
   },
   "devDependencies": {
     "browserify": "^16.5.0",
+    "express": "^4.17.1",
     "less": "^3.11.1",
     "less-plugin-clean-css": "^1.5.1",
     "mongodb": "^4.1.4",
     "place": "^1.2.1",
     "semistandard": "^14.2.0",
-    "terser": "^4.6.7",
-    "express": "^4.17.1"
+    "terser": "^4.6.7"
   }
 }
