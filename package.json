@@ -1,7 +1,7 @@
 {
   "name": "web-entwicklung",
   "scripts": {
-    "clean": "npm run clean:build && rm -rf node_modules",
+    "clean": "npm run clean:build && rm -rf node_modules && rm -rf package-lock.json",
     "clean:build": "rm -rf build",
     "lint": "semistandard Client/src/js/**/*.js && semistandard Server/src/js/**/*.js",
     "start": "node Server/src/js/server.js",
