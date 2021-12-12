@@ -10,18 +10,26 @@ server.use(express.static('build'));
 
 let port = 8080;
 
-for (const argument of process.argv) {
-  const maybePort = parseInt(argument.replace(/[^0-9]/g, ''));
-  if (!isNaN(maybePort)) {
-    port = maybePort;
+for (let i = 0; i < process.argv.length; i++) {
+  const argument = process.argv[i];
+  if (argument.includes('port') && i === process.argv.length - 1) {
+    const maybePort = parseInt(argument.replace(/[^0-9]/g, ''));
+    if (!isNaN(maybePort)) {
+      port = maybePort;
+    }
+  } else if (argument.includes('port')) {
+    const nextArgument = process.argv[i + 1];
+    const maybePort = parseInt(nextArgument);
+    if (!isNaN(maybePort)) {
+      port = maybePort;
+    }
   }
 }
-// start the express web server listening on 8080
+
 server.listen(port, () => {
   console.log('listening on ' + port);
 });
 
-// serve the homepage
 server.get('/', (request, response) => {
   response.sendFile(path.join(__dirname, '/../../build/index.html'));
 });
