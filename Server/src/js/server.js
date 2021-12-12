@@ -5,7 +5,6 @@ const path = require('browserify');
 
 const server = express();
 
-// serve files from the public directory
 server.use(express.static('build'));
 
 let port = 8080;
