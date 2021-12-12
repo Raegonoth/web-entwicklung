@@ -1,7 +1,13 @@
 console.log('Client-side code running');
 
-const element = document.getElementById('betreiber');
+const betreiberButton = document.getElementById('betreiber');
 
-element.addEventListener('click', () => {
-  console.log('test');
+betreiberButton.addEventListener('click', () => {
+  console.log('Willkommen Betreiber');
+});
+
+const kundeButton = document.getElementById('kunde');
+
+kundeButton.addEventListener('click', () => {
+  console.log('Willkommen Kunde');
 });
