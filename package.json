@@ -7,21 +7,25 @@
     "start": "node Server/src/js/server.js",
     "debug": "npm run lint && npm run clean:build && mkdir build && npm run static && npm run css && npm run js",
     "build": "npm run lint && npm run clean:build && mkdir build && npm run static:min && npm run css:min && npm run js:min",
-    "static": "cp Client/src/index.html build/index.html",
-    "static:min": "npm run static && place build/index.html style.css style.min.css && place build/index.html main.js main.min.js",
+    "buildWithoutLint": "npm run clean:build && mkdir build && npm run static:min && npm run css:min && npm run js:min",
+    "static": "cp Client/src/index.html build/index.html && cp Client/src/html/betreiber.html build/betreiber.html && cp Client/src/html/kunde.html build/kunde.html && cp Client/src/html/vorstellung.html build/vorstellung.html",
+    "static:min": "npm run static && place build/index.html style.css style.min.css && place build/index.html main.js main.min.js && place build/betreiber.html style.css style.min.css && place build/betreiber.html main.js main.min.js && place build/kunde.html style.css style.min.css && place build/kunde.html main.js main.min.js && place build/vorstellung.html main.js main.min.js && place build/vorstellung.html style.css style.min.css",
     "css": "lessc Client/src/styles/style.less build/style.css",
     "css:min": "lessc --clean-css Client/src/styles/style.less build/style.min.css",
     "js": "browserify Client/src/js/main.js -o build/main.js",
     "js:min": "npm run js && terser build/main.js --compress --mangle --comments=false -o build/main.min.js"
   },
   "devDependencies": {
+    "body-parser": "^1.19.1",
     "browserify": "^16.5.0",
+    "cross-fetch": "^3.1.4",
     "express": "^4.17.1",
     "less": "^3.11.1",
     "less-plugin-clean-css": "^1.5.1",
     "mongodb": "^4.1.4",
     "place": "^1.2.1",
     "semistandard": "^14.2.0",
+    "sessionstorage": "^0.1.0",
     "terser": "^4.6.7"
   }
 }
