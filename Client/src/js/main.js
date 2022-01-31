@@ -8,10 +8,11 @@ function onLoad () {
   if (document.title === 'Kunde') {
     fetchVorstellungen();
   } else if (document.title === 'Vorstellung') {
-    // console.log(sessionstorage.getItem('vorstellung'));
     fetchSitzplaetze(sessionstorage.getItem('vorstellung'));
   } else if (document.title === 'Bestätigung') {
     fetchReservierungen();
+  } else if (document.title === 'Betreiber') {
+    fetchKinosaele();
   }
 }
 
@@ -134,6 +135,26 @@ function fetchReservierungen () {
     });
 }
 
+function fetchKinosaele () {
+  const saalSelect = document.getElementById('saal');
+  fetch('/getKinosaal', { method: 'GET' })
+    .then((response) => {
+      if (response.ok) return response.json();
+      throw new Error('Request failed.');
+    })
+    .then((kinosaele) => {
+      for (let i = 0; i < kinosaele.length; i++) {
+        const option = document.createElement('option');
+        option.setAttribute('value', kinosaele[i]._id);
+        option.innerHTML = kinosaele[i].name;
+        saalSelect.appendChild(option);
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}
+
 function makeSitzList (vorstellung, reservierungen, kinosaele) {
   let reservierteSitze = [];
   for (let i = 0; i < reservierungen.length; i++) {
@@ -200,11 +221,13 @@ function makeSitzList (vorstellung, reservierungen, kinosaele) {
   const button = document.createElement('button');
   button.setAttribute('type', 'submit');
   button.innerHTML = 'Reservieren';
+  sitzContainer.appendChild(document.createElement('br'));
   sitzContainer.appendChild(button);
 }
 
 function makeVorstellungList (data) {
   const listContainer = document.getElementById('listContainer');
+  // const itemHeight = 160;
 
   for (let i = 0; i < data.length; i++) {
     const listItem = document.createElement('fieldset');
@@ -217,14 +240,31 @@ function makeVorstellungList (data) {
     });
     const legend = document.createElement('legend');
     legend.innerHTML = 'Vorstellung';
-    const itemName = document.createElement('p');
-    itemName.innerHTML = 'Film: ' + data[i].name;
-    const itemRoom = document.createElement('p');
-    itemRoom.innerHTML = 'Saal: ' + data[i].saal;
-    const itemDate = document.createElement('p');
-    itemDate.innerHTML = 'Vorstellungszeit: Am ' + data[i].date + ' um ' + data[i].time;
-    listItem.append(legend, itemName, itemRoom, itemDate);
+    const itemTable = document.createElement('table');
+    const itemTableRow1 = document.createElement('tr');
+    const itemTableRow2 = document.createElement('tr');
+    const itemTableRow3 = document.createElement('tr');
 
+    const itemNameLabel = document.createElement('td');
+    itemNameLabel.innerHTML = 'Vorstellung:';
+    const itemName = document.createElement('td');
+    itemName.innerHTML = data[i].name;
+    itemTableRow1.append(itemNameLabel, itemName);
+
+    const itemSaalLabel = document.createElement('td');
+    itemSaalLabel.innerHTML = 'Saal:';
+    const itemSaal = document.createElement('td');
+    itemSaal.innerHTML = data[i].saal;
+    itemTableRow2.append(itemSaalLabel, itemSaal);
+
+    const itemDateLabel = document.createElement('td');
+    itemDateLabel.innerHTML = 'Vorstellungszeit:';
+    const itemDate = document.createElement('td');
+    itemDate.innerHTML = data[i].date + ' um ' + data[i].time;
+    itemTableRow3.append(itemDateLabel, itemDate);
+
+    itemTable.append(itemTableRow1, itemTableRow2, itemTableRow3);
+    listItem.append(legend, itemTable);
     listContainer.appendChild(listItem);
   }
 }

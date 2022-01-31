@@ -1,7 +1,8 @@
 const express = require('express');
 const path = require('browserify');
 
-const MongoClient = require('mongodb').MongoClient;
+const mongo = require('mongodb');
+const MongoClient = mongo.MongoClient;
 const server = express();
 
 const bodyParser = require('body-parser');
@@ -94,24 +95,12 @@ server.post('/addVorstellung', (req, res) => {
     saal: req.body.saal,
     name: req.body.name
   };
-  // console.log(vorstellung);
+  vorstellung.saal = mongo.ObjectId(vorstellung.saal);
 
-  db.collection('kinosaal').findOne({ name: { $eq: vorstellung.saal } })
-    .then((response) => {
-      // console.log(response);
-      vorstellung.saal = response._id;
-
-      // console.log(vorstellung);
-      db.collection('vorstellung').insertOne(vorstellung, (err, result) => {
-        if (err) {
-          return console.log(err);
-        }
-        res.redirect(req.get('referer'));
-      });
-    })
-    .catch((error) => {
-      console.log(error);
-    });
+  db.collection('vorstellung').insertOne(vorstellung, (err, result) => {
+    if (err) return console.log(err);
+    res.redirect(req.get('referer'));
+  });
 });
 
 server.get('/getVorstellung', (req, res) => {
@@ -130,8 +119,6 @@ server.post('/addReservierung', (req, res) => {
     name: req.body.name
   };
   reservierung.qr = generateQr();
-
-  console.log(reservierung);
 
   db.collection('vorstellung').findOne({ name: { $eq: reservierung.vorstellung } })
     .then((response) => {

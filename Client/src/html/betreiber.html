@@ -5,47 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Betreiber</title>
     <link rel="stylesheet" href="style.css" />
+    <script src="main.js"></script>
 </head>
 <body>
 <h1>Willkommen Betreiber!</h1>
 <form action="/addKinosaal" method="POST">
     <fieldset>
         <legend>Kinosaal erstellen</legend>
-        <div>
-            <label for="name">Name</label>
-            <input type="text" id="name" name="name" required>
-        </div>
-        <div>
-            <label for="sitzreihen">Sitzreihen</label>
-            <input type="number" id="sitzreihen" name="sitzreihen" required>
-        </div>
-        <div>
-            <label for="sitze">Sitze pro Sitzreihe</label>
-            <input type="number" id="sitze" name="sitze" required>
-        </div>
-        <button type="submit">Saal erstellen</button>
+        <table>
+            <tr>
+                <td><label for="name">Name</label></td>
+                <td><input type="text" id="kinoName" name="name" required></td>
+            </tr>
+            <tr>
+                <td><label for="sitzreihen">Sitzreihen</label></td>
+                <td><input type="number" id="sitzreihen" name="sitzreihen" required></td>
+            </tr>
+            <tr>
+                <td><label for="sitze">Sitze pro Sitzreihe</label></td>
+                <td><input type="number" id="sitze" name="sitze" required></td>
+            </tr>
+            <tr>
+                <td colspan='2' class='submitButton'><button type="submit">Saal erstellen</button></td>
+            </tr>
+        </table>
     </fieldset>
 </form>
 <form action="/addVorstellung" method="POST">
     <fieldset>
         <legend>Vorstellung erstellen</legend>
-        <div>
-            <label for="date">Date</label>
-            <input type="date" id="date" name="date" required>
-        </div>
-        <div>
-            <label for="time">Time</label>
-            <input type="time" id="time" name="time" required>
-        </div>
-        <div>
-            <label for="saal">Saal</label>
-            <input type="text" id="saal" name="saal" required>
-        </div>
-        <div>
-            <label for="name">Name des Films</label>
-            <input type="text" id="name" name="name" required>
-        </div>
-        <button type="submit">Vorstellung erstellen</button>
+        <table>
+            <tr>
+                <td><label for="date">Date</label></td>
+                <td><input type="date" id="date" name="date" required></td>
+            </tr>
+            <tr>
+                <td><label for="time">Time</label></td>
+                <td><input type="time" id="time" name="time" required></td>
+            </tr>
+            <tr>
+                <td><label for="saal">Saal</label></td>
+                <td><select id="saal" name="saal" required></select></td>
+            </tr>
+            <tr>
+                <td><label for="name">Name des Films</label></td>
+                <td><input type="text" id="filmName" name="name" required></td>
+            </tr>
+            <tr>
+                <td colspan='2' class='submitButton'><button type="submit">Vorstellung erstellen</button></td>
+            </tr>
+        </table>
     </fieldset>
 </form>
 <script>
@@ -58,6 +67,7 @@ function clearDatabase () {
   form.submit();
 }
 </script>
+<br>
 <button onclick="clearDatabase();">Datenbank zurücksetzen</button>
 </body>
 </html>
