@@ -30,6 +30,8 @@ for (let i = 0; i < process.argv.length; i++) {
   }
 }
 
+const usedQrs = [];
+
 MongoClient.connect(url, (err, client) => {
   if (err) {
     return console.log(err);
@@ -38,11 +40,26 @@ MongoClient.connect(url, (err, client) => {
 
   server.listen(port, () => {
     console.log('listening on ' + port);
+
+    db.collection('reservierung').find().toArray((err, result) => {
+      if (err) return console.log(err);
+      for (let i = 0; i < result.length; i++) {
+        usedQrs.push(result[i].qr);
+      }
+    });
   });
 });
 
-server.get('/', (request, response) => {
-  response.sendFile(path.join(__dirname, '/../../build/index.html'));
+server.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '/../../build/index.html'));
+});
+
+server.post('/clearDatabase', (req, res) => { // wirft error 'ns not found' wenn bereits alles geloescht ist
+  db.collection('kinosaal').drop();
+  db.collection('vorstellung').drop();
+  db.collection('reservierung').drop();
+
+  res.redirect(req.get('referer'));
 });
 
 // Kinosaal
@@ -56,9 +73,7 @@ server.post('/addKinosaal', (req, res) => {
   // console.log(kinosaal);
 
   db.collection('kinosaal').insertOne(kinosaal, (err, result) => {
-    if (err) {
-      return console.log(err);
-    }
+    if (err) return console.log(err);
     res.redirect(req.get('referer'));
   });
 });
@@ -102,24 +117,7 @@ server.post('/addVorstellung', (req, res) => {
 server.get('/getVorstellung', (req, res) => {
   db.collection('vorstellung').find().toArray((err, result) => {
     if (err) return console.log(err);
-
-    const promises = [];
-    for (let i = 0; i < result.length; i++) {
-      promises.push(db.collection('kinosaal').findOne({ _id: { $eq: result[i].saal } })
-        .then((response) => {
-          // console.log(response);
-          result[i].saal = response.name;
-
-          // console.log(result[i]);
-        })
-        .catch((error) => {
-          console.log(error);
-        })
-      );
-    }
-    Promise.allSettled(promises).then(() => {
-      res.send(result);
-    });
+    res.send(result);
   });
 });
 
@@ -131,21 +129,17 @@ server.post('/addReservierung', (req, res) => {
     sitze: req.body.sitze,
     name: req.body.name
   };
+  reservierung.qr = generateQr();
 
   console.log(reservierung);
 
   db.collection('vorstellung').findOne({ name: { $eq: reservierung.vorstellung } })
     .then((response) => {
-      console.log(response);
       reservierung.vorstellung = response._id;
 
-      console.log(reservierung);
-
       db.collection('reservierung').insertOne(reservierung, (err, result) => {
-        if (err) {
-          return console.log(err);
-        }
-        res.redirect(req.get('referer'));
+        if (err) return console.log(err);
+        res.redirect(req.get('origin') + '/bestaetigung.html?qr=' + reservierung.qr);
       });
     })
     .catch((error) => {
@@ -156,24 +150,20 @@ server.post('/addReservierung', (req, res) => {
 server.get('/getReservierung', (req, res) => {
   db.collection('reservierung').find().toArray((err, result) => {
     if (err) return console.log(err);
-
-    const promises = [];
-    for (let i = 0; i < result.length; i++) {
-      promises.push(db.collection('vorstellung').findOne({ _id: { $eq: result[i].vorstellung } })
-        .then((response) => {
-          if (response !== null) {
-            console.log(response);
-            result[i].vorstellung = response.vorstellung.name;
-          }
-          console.log(result[i]);
-        })
-        .catch((error) => {
-          console.log(error);
-        })
-      );
-    }
-    Promise.allSettled(promises).then(() => {
-      res.send(result);
-    });
+    res.send(result);
   });
 });
+
+function generateQr () {
+  const qrLength = 32;
+  const characters = '0123456789abcdefghijklmnopqrstuvwxyz';
+  let qrString;
+  do {
+    qrString = '';
+    for (let i = 0; i < qrLength; i++) {
+      qrString += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+  }
+  while (usedQrs.includes(qrString));
+  return qrString;
+}
