@@ -1,5 +1,6 @@
 const fetch = require('cross-fetch');
 const sessionstorage = require('sessionstorage');
+const params = new Proxy(new URLSearchParams(window.location.search), { get: (searchParams, prop) => searchParams.get(prop) });
 
 window.addEventListener('load', onLoad);
 
@@ -9,6 +10,8 @@ function onLoad () {
   } else if (document.title === 'Vorstellung') {
     // console.log(sessionstorage.getItem('vorstellung'));
     fetchSitzplaetze(sessionstorage.getItem('vorstellung'));
+  } else if (document.title === 'Bestätigung') {
+    fetchReservierungen();
   }
 }
 
@@ -18,31 +21,24 @@ function fetchVorstellungen () {
       if (response.ok) return response.json();
       throw new Error('Request failed.');
     })
-    .then((data) => {
-      makeVorstellungList(data);
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-}
-
-function fetchSitzplaetze (vorstellungString) {
-  const temp = vorstellungString.split('.');
-  const vorstellung = { _id: temp[0], date: temp[1], time: temp[2], saal: temp[3], name: temp[4] };
-  // console.log(vorstellung);
-  fetch('/getKinosaal', { method: 'GET' })
-    .then((response) => {
-      if (response.ok) return response.json();
-      throw new Error('Request failed.');
-    })
-    .then((kinosäle) => {
-      fetch('/getReservierung', { method: 'GET' })
+    .then((vorstellungen) => {
+      fetch('/getKinosaal', { method: 'GET' })
         .then((response) => {
           if (response.ok) return response.json();
           throw new Error('Request failed.');
         })
-        .then((reservierungen) => {
-          makeSitzList(vorstellung, reservierungen, kinosäle);
+        .then((kinosaele) => {
+          for (let i = 0; i < vorstellungen.length; i++) {
+            for (let j = 0; j < kinosaele.length; j++) {
+              if (kinosaele[j]._id === vorstellungen[i].saal) {
+                vorstellungen[i].saal = kinosaele[j].name;
+                break;
+              }
+            }
+          }
+        })
+        .then(() => {
+          makeVorstellungList(vorstellungen);
         })
         .catch((error) => {
           console.log(error);
@@ -53,24 +49,109 @@ function fetchSitzplaetze (vorstellungString) {
     });
 }
 
-function makeSitzList (vorstellung, reservierungen, kinosäle) {
+function fetchSitzplaetze (vorstellungString) {
+  const temp = vorstellungString.split('.');
+  const vorstellung = { _id: temp[0], date: temp[1], time: temp[2], saal: temp[3], name: temp[4] };
+
+  fetch('/getKinosaal', { method: 'GET' })
+    .then((response) => {
+      if (response.ok) return response.json();
+      throw new Error('Request failed.');
+    })
+    .then((kinosaele) => {
+      fetch('/getReservierung', { method: 'GET' })
+        .then((response) => {
+          if (response.ok) return response.json();
+          throw new Error('Request failed.');
+        })
+        .then((reservierungen) => {
+          makeSitzList(vorstellung, reservierungen, kinosaele);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}
+
+function fetchReservierungen () {
+  fetch('/getReservierung', { method: 'GET' })
+    .then((response) => {
+      if (response.ok) return response.json();
+      throw new Error('Request failed.');
+    })
+    .then((reservierungen) => {
+      const qrString = params.qr;
+      for (let i = 0; i < reservierungen.length; i++) {
+        if (reservierungen[i].qr === qrString) return reservierungen[i];
+      }
+    })
+    .then((reservierung) => {
+      fetch('/getVorstellung', { method: 'GET' })
+        .then((response) => {
+          if (response.ok) return response.json();
+          throw new Error('Request failed.');
+        })
+        .then((vorstellungen) => {
+          for (let i = 0; i < vorstellungen.length; i++) {
+            if (vorstellungen[i]._id === reservierung.vorstellung) {
+              return vorstellungen[i];
+            }
+          }
+        })
+        .then((vorstellung) => {
+          reservierung.vorstellung = vorstellung.name;
+          reservierung.date = vorstellung.date;
+          reservierung.time = vorstellung.time;
+          fetch('/getKinosaal', { method: 'GET' })
+            .then((response) => {
+              if (response.ok) return response.json();
+              throw new Error('Request failed.');
+            })
+            .then((kinosaele) => {
+              for (let i = 0; i < kinosaele.length; i++) {
+                if (kinosaele[i]._id === vorstellung.saal) {
+                  return kinosaele[i];
+                }
+              }
+            })
+            .then((kinosaal) => {
+              reservierung.saal = kinosaal.name;
+              makeReservierungTable(reservierung);
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}
+
+function makeSitzList (vorstellung, reservierungen, kinosaele) {
   let reservierteSitze = [];
   for (let i = 0; i < reservierungen.length; i++) {
-    if (reservierungen[i].vorstellung === vorstellung.name) {
+    if (reservierungen[i].vorstellung === vorstellung._id) {
       reservierteSitze.push(reservierungen[i].sitze);
     }
   }
   reservierteSitze = reservierteSitze.flat();
-  // console.log(reservierteSitze);
+  console.log(reservierteSitze);
+  console.log(vorstellung);
 
   let kinosaal;
-  for (let i = 0; i < kinosäle.length; i++) {
-    if (kinosäle[i].name === vorstellung.saal) {
-      kinosaal = kinosäle[i];
+  for (let i = 0; i < kinosaele.length; i++) {
+    if (kinosaele[i].name === vorstellung.saal) {
+      kinosaal = kinosaele[i];
+      break;
     }
   }
-
-  // console.log(kinosaal);
 
   const sitzePerKinosaal = [];
   for (let i = 1; i <= kinosaal.sitzreihen; i++) {
@@ -78,8 +159,6 @@ function makeSitzList (vorstellung, reservierungen, kinosäle) {
       sitzePerKinosaal.push(i + '.' + j);
     }
   }
-
-  // console.log(sitzePerKinosaal);
 
   const restSitze = sitzePerKinosaal;
   for (let i = 0; i < reservierteSitze.length; i++) {
@@ -89,7 +168,7 @@ function makeSitzList (vorstellung, reservierungen, kinosäle) {
     }
   }
 
-  // console.log(restSitze);
+  console.log(restSitze);
 
   const sitzContainer = document.getElementById('sitzContainer');
 
@@ -125,7 +204,6 @@ function makeSitzList (vorstellung, reservierungen, kinosäle) {
 }
 
 function makeVorstellungList (data) {
-  // console.log(data);
   const listContainer = document.getElementById('listContainer');
 
   for (let i = 0; i < data.length; i++) {
@@ -149,4 +227,24 @@ function makeVorstellungList (data) {
 
     listContainer.appendChild(listItem);
   }
+}
+
+function makeReservierungTable (reservierung) {
+  const qrCode = require('qrcode');
+  const documentElements = {
+    canvas: document.getElementById('canvas'),
+    name: document.getElementById('name'),
+    vorstellung: document.getElementById('vorstellung'),
+    date: document.getElementById('date'),
+    saal: document.getElementById('saal'),
+    sitze: document.getElementById('sitze')
+  };
+  const url = window.location.origin + window.location.pathname + '?qr=' + reservierung.qr;
+
+  qrCode.toCanvas(documentElements.canvas, url, { errorCorrectionLevel: 'H' }, (error) => { if (error) console.error(error); });
+  documentElements.name.innerHTML = reservierung.name;
+  documentElements.vorstellung.innerHTML = reservierung.vorstellung;
+  documentElements.date.innerHTML = reservierung.date + ' um ' + reservierung.time;
+  documentElements.saal.innerHTML = reservierung.saal;
+  documentElements.sitze.innerHTML = reservierung.sitze.toString().replaceAll(',', ', ');
 }

@@ -48,5 +48,16 @@
         <button type="submit">Vorstellung erstellen</button>
     </fieldset>
 </form>
+<script>
+function clearDatabase () {
+  var form = document.createElement('form');
+  form.setAttribute('method', 'POST');
+  form.setAttribute('action', '/clearDatabase');
+  form.style.display = 'hidden';
+  document.body.appendChild(form)
+  form.submit();
+}
+</script>
+<button onclick="clearDatabase();">Datenbank zurücksetzen</button>
 </body>
 </html>
