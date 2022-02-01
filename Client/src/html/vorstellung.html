@@ -10,13 +10,17 @@
 <body>
 <h1>Vorstellung</h1>
 <form action="/addReservierung" method="POST">
-  <fieldset id="sitzContainer">
+  <fieldset>
     <legend>Welche Sitze möchten Sie reservieren?</legend>
     <div>
       <label for="name">Name:</label>
       <input type="text" id="name" name="name" required>
     </div>
+    <div id="sitzContainer"></div>
     <br>
+    <ul id="pagination"></ul>
+    <br><br>
+    <button type="submit">Reservieren</button>
   </fieldset>
 </form>
 </body>
