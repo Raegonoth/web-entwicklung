@@ -15,18 +15,20 @@
     "js": "browserify Client/src/js/main.js -o build/main.js",
     "js:min": "npm run js && terser build/main.js --compress --mangle --comments=false -o build/main.min.js"
   },
-  "devDependencies": {
+  "dependencies": {
     "body-parser": "^1.19.1",
-    "browserify": "^16.5.0",
     "cross-fetch": "^3.1.4",
     "express": "^4.17.1",
+    "mongodb": "^4.1.4",
+    "sessionstorage": "^0.1.0",
+    "qrcode": "^1.5.0"
+  },
+  "devDependencies": {
+    "browserify": "^16.5.0",
     "less": "^3.11.1",
     "less-plugin-clean-css": "^1.5.1",
-    "mongodb": "^4.1.4",
     "place": "^1.2.1",
     "semistandard": "^14.2.0",
-    "sessionstorage": "^0.1.0",
-    "terser": "^4.6.7",
-    "qrcode": "^1.5.0"
+    "terser": "^4.6.7"
   }
 }
