@@ -10,9 +10,6 @@ server.use(bodyParser.urlencoded({ extended: true }));
 
 server.use(express.static('build'));
 
-const url = 'mongodb://localhost';
-let db;
-
 let port = 8080;
 
 for (let i = 0; i < process.argv.length; i++) {
@@ -31,12 +28,12 @@ for (let i = 0; i < process.argv.length; i++) {
   }
 }
 
+const url = 'mongodb://localhost';
+let db;
 const usedQrs = [];
 
 MongoClient.connect(url, (err, client) => {
-  if (err) {
-    return console.log(err);
-  }
+  if (err) return console.log(err);
   db = client.db('kino');
 
   server.listen(port, () => {
@@ -71,9 +68,8 @@ server.post('/addKinosaal', (req, res) => {
     sitzreihen: req.body.sitzreihen,
     sitze: req.body.sitze
   };
-  // console.log(kinosaal);
 
-  db.collection('kinosaal').insertOne(kinosaal, (err, result) => {
+  db.collection('kinosaal').insertOne(kinosaal, (err) => {
     if (err) return console.log(err);
     res.redirect(req.get('referer'));
   });
@@ -97,7 +93,7 @@ server.post('/addVorstellung', (req, res) => {
   };
   vorstellung.saal = mongo.ObjectId(vorstellung.saal);
 
-  db.collection('vorstellung').insertOne(vorstellung, (err, result) => {
+  db.collection('vorstellung').insertOne(vorstellung, (err) => {
     if (err) return console.log(err);
     res.redirect(req.get('referer'));
   });
@@ -124,7 +120,7 @@ server.post('/addReservierung', (req, res) => {
     .then((response) => {
       reservierung.vorstellung = response._id;
 
-      db.collection('reservierung').insertOne(reservierung, (err, result) => {
+      db.collection('reservierung').insertOne(reservierung, (err) => {
         if (err) return console.log(err);
         res.redirect(req.get('origin') + '/bestaetigung.html?qr=' + reservierung.qr);
       });
